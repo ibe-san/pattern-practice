@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Pattern Practice ドリル</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:linear-gradient(145deg,#0a0a1a 0%,#111128 50%,#0d1b2a 100%);font-family:'Noto Sans JP','DM Sans',sans-serif;color:#fff;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+/* ===== MENU ===== */
+#menu-screen{height:100%;display:flex;flex-direction:column;padding:20px;overflow-y:auto}
+.menu-inner{max-width:480px;width:100%;margin:0 auto}
+.menu-title{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;margin-bottom:2px}
+.menu-sub{color:rgba(255,255,255,0.4);font-size:10px;font-weight:300;margin-bottom:16px}
+.ex-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all 0.2s}
+.ex-card:active{background:rgba(255,255,255,0.08);transform:scale(0.98)}
+.ex-card-top{display:flex;align-items:center;justify-content:space-between}
+.ex-card-id{font-family:'Space Mono',monospace;font-size:11px;color:#E07A5F;font-weight:700}
+.ex-card-count{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.3)}
+.ex-card-title{font-size:12px;color:rgba(255,255,255,0.7);margin-top:4px}
+.ex-card-sections{font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px;line-height:1.4}
+.ex-card.selected{border-color:rgba(224,122,95,0.5);background:rgba(224,122,95,0.08)}
+
+/* Section select overlay */
+.section-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center;padding:20px}
+.section-overlay.visible{display:flex}
+.section-modal{background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px;max-width:380px;width:100%;max-height:80vh;display:flex;flex-direction:column}
+.section-modal-title{font-size:14px;font-weight:600;color:#E07A5F;margin-bottom:4px}
+.section-modal-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:12px}
+.section-list{overflow-y:auto;flex:1}
+.section-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:4px;cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)}
+.section-item:active{background:rgba(255,255,255,0.08)}
+.section-item.checked{border-color:rgba(224,122,95,0.4);background:rgba(224,122,95,0.08)}
+.section-check{width:18px;height:18px;border-radius:4px;border:1.5px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:10px;color:#E07A5F;flex-shrink:0}
+.section-item.checked .section-check{border-color:#E07A5F;background:rgba(224,122,95,0.15)}
+.section-item-label{font-size:12px;color:rgba(255,255,255,0.7);flex:1}
+.section-item-count{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.3)}
+.section-btns{display:flex;gap:8px;margin-top:12px}
+.section-btn{flex:1;padding:10px;border-radius:10px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans JP',sans-serif}
+.section-btn.cancel{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)}
+.section-btn.start{background:#E07A5F;color:#fff}
+.section-btn.start:disabled{opacity:0.3}
+
+/* Options row */
+.menu-options{display:flex;gap:8px;margin-top:12px;margin-bottom:12px;flex-wrap:wrap}
+.menu-toggle{padding:7px 14px;border-radius:100px;cursor:pointer;font-size:11px;font-weight:500;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);user-select:none}
+.menu-toggle.active{background:rgba(224,122,95,0.12);border-color:rgba(224,122,95,0.4);color:#E07A5F}
+.auto-settings{display:none;margin-bottom:12px;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px}
+.auto-settings.visible{display:block}
+.auto-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.auto-row:last-child{margin-bottom:0}
+.auto-label{font-size:12px;color:rgba(255,255,255,0.5)}
+.auto-val{display:flex;align-items:center;gap:6px}
+.auto-val button{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.auto-val .sec-num{font-family:'Space Mono',monospace;font-size:14px;color:#E07A5F;min-width:22px;text-align:center}
+
+/* ===== PRACTICE ===== */
+#practice-screen{display:none;height:100%;flex-direction:column}
+.prac-header{padding:8px 12px;display:flex;align-items:center;gap:8px}
+.back-btn{background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:6px;display:flex}
+.prac-header-info{flex:1}
+.prac-header-label{font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.progress-wrap{position:relative;height:24px;display:flex;align-items:center;cursor:pointer}
+.progress-track{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;position:relative}
+.progress-fill{height:100%;background:#E07A5F;border-radius:2px;transition:width 0.3s;position:relative}
+.progress-thumb{position:absolute;right:-6px;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:50%;background:#E07A5F;border:2px solid #fff;box-shadow:0 0 6px rgba(224,122,95,0.4)}
+.progress-num{position:absolute;top:-16px;right:-10px;font-family:'Space Mono',monospace;font-size:9px;color:#E07A5F;background:rgba(10,10,26,0.9);padding:1px 5px;border-radius:4px;white-space:nowrap;pointer-events:none}
+.prac-counter{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)}
+.section-badge{text-align:center;padding:2px 0}
+.section-badge-text{display:inline-block;padding:2px 10px;border-radius:6px;background:rgba(242,204,143,0.1);border:1px solid rgba(242,204,143,0.2);font-size:10px;color:#F2CC8F}
+.card-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 16px;gap:8px;min-height:0}
+.card-wrapper{perspective:1200px;width:100%;max-width:420px;height:210px;cursor:pointer}
+.card-inner{position:relative;width:100%;height:100%;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);transform-style:preserve-3d}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 22px;text-align:center}
+.card-front{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)}
+.card-back{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transform:rotateY(180deg)}
+.card-lang-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:10px}
+.card-front .card-lang-label{color:#E07A5F}
+.card-back .card-lang-label{color:#F2CC8F}
+.card-text{font-size:19px;font-weight:600;line-height:1.5;color:#fff}
+.card-text.en{font-family:'DM Sans',sans-serif}
+.card-text.ja{font-family:'Noto Sans JP',sans-serif}
+.card-text.small{font-size:15px}
+.speak-btn{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:4px 10px;border-radius:100px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.tap-hint{font-size:10px;color:rgba(255,255,255,0.18)}
+.action-row{display:flex;gap:32px;align-items:center;min-height:52px}
+.action-btn{width:50px;height:50px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;font-size:18px;font-weight:700}
+.action-btn:active{transform:scale(1.15)}
+.action-btn.wrong{border-color:rgba(239,71,111,0.45);color:#EF476F}
+.action-btn.correct{border-color:rgba(82,183,136,0.45);color:#52B788}
+.action-row.hidden{visibility:hidden}
+.score-bar{padding:6px 16px;display:flex;justify-content:center;gap:24px}
+.score-item{display:flex;align-items:center;gap:4px}
+.score-dot{width:6px;height:6px;border-radius:50%}
+.score-num{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,0.4)}
+.auto-bar{display:none;padding:6px 16px;align-items:center;justify-content:center;gap:10px}
+.auto-bar.visible{display:flex}
+.auto-pause-btn{padding:6px 14px;border-radius:100px;border:1px solid rgba(224,122,95,0.4);background:rgba(224,122,95,0.1);color:#E07A5F;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px}
+.auto-timer-ring{position:relative;width:32px;height:32px}
+.auto-timer-ring svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:3}
+.ring-fg{fill:none;stroke:#E07A5F;stroke-width:3;stroke-linecap:round}
+.auto-timer-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.5)}
+
+/* Jump */
+.jump-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center;padding:20px}
+.jump-overlay.visible{display:flex}
+.jump-modal{background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px;max-width:340px;width:100%;max-height:70vh;display:flex;flex-direction:column}
+.jump-modal-title{font-size:13px;font-weight:600;margin-bottom:12px;color:rgba(255,255,255,0.7)}
+.jump-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;overflow-y:auto;padding:2px}
+.jump-cell{height:40px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-family:'Space Mono',monospace;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.jump-cell.active{background:rgba(224,122,95,0.2);border-color:rgba(224,122,95,0.5);color:#E07A5F}
+.jump-cell.done{background:rgba(82,183,136,0.12);border-color:rgba(82,183,136,0.3);color:#52B788}
+.jump-cell.has-wrong{background:rgba(239,71,111,0.12);border-color:rgba(239,71,111,0.3);color:#EF476F}
+.jump-close{margin-top:12px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.5);font-size:13px;cursor:pointer;font-family:'Noto Sans JP',sans-serif}
+
+/* ===== RESULT ===== */
+#result-screen{display:none;height:100%;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.result-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:32px 24px;text-align:center;max-width:360px;width:100%}
+.result-pct{font-size:42px;font-weight:700;font-family:'Space Mono',monospace;color:#E07A5F;margin-bottom:2px}
+.result-sub{font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:24px}
+.result-stats{display:flex;gap:16px;justify-content:center;margin-bottom:24px}
+.result-stat-num{font-size:20px;font-weight:700}
+.result-stat-label{font-size:9px;color:rgba(255,255,255,0.35);margin-top:2px}
+.result-divider{width:1px;background:rgba(255,255,255,0.1)}
+.result-btn{width:100%;padding:11px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans JP',sans-serif;margin-top:6px}
+.result-btn.primary{background:#E07A5F;color:#fff}
+.result-btn.retry{background:rgba(239,71,111,0.12);color:#EF476F;border:1px solid rgba(239,71,111,0.3)}
+.result-btn.secondary{background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1)}
+.retry-label{font-size:10px;color:rgba(255,255,255,0.3);margin-top:10px;margin-bottom:2px}
+@keyframes slideInRight{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+.animate-in{animation:slideInRight 0.25s cubic-bezier(0.4,0,0.2,1)}
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<div id="menu-screen">
+<div class="menu-inner">
+<div class="menu-title">Pattern Practice</div>
+<div class="menu-sub">ドリル Ex.2〜Ex.11（470問）</div>
+<div class="menu-options">
+<div class="menu-toggle active" id="btn-mode-manual" onclick="setMode('manual')">Manual</div>
+<div class="menu-toggle" id="btn-mode-auto" onclick="setMode('auto')">Auto Play</div>
+<div class="menu-toggle" id="btn-shuffle" onclick="toggleShuffle()">Shuffle OFF</div>
+</div>
+<div class="auto-settings" id="auto-settings">
+<div class="auto-row"><div class="auto-label">表面</div><div class="auto-val"><button onclick="adjustTime('front',-1)">−</button><span class="sec-num" id="auto-front-sec">5</span><button onclick="adjustTime('front',1)">+</button><span style="font-size:10px;color:rgba(255,255,255,0.3)">秒</span></div></div>
+<div class="auto-row"><div class="auto-label">裏面</div><div class="auto-val"><button onclick="adjustTime('back',-1)">−</button><span class="sec-num" id="auto-back-sec">5</span><button onclick="adjustTime('back',1)">+</button><span style="font-size:10px;color:rgba(255,255,255,0.3)">秒</span></div></div>
+</div>
+<div id="ex-list"></div>
+</div>
+</div>
+
+<!-- Section Select -->
+<div class="section-overlay" id="section-overlay" onclick="if(event.target===this)closeSections()">
+<div class="section-modal">
+<div class="section-modal-title" id="section-modal-title"></div>
+<div class="section-modal-sub" id="section-modal-sub">練習するセクションを選択</div>
+<div class="section-list" id="section-list"></div>
+<div class="section-btns">
+<button class="section-btn cancel" onclick="closeSections()">戻る</button>
+<button class="section-btn start" id="section-start-btn" onclick="startFromSections()">スタート</button>
+</div>
+</div>
+</div>
+
+<!-- PRACTICE -->
+<div id="practice-screen">
+<div class="prac-header">
+<button class="back-btn" onclick="goToMenu()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+<div class="prac-header-info">
+<div class="prac-header-label" id="header-label"></div>
+<div class="progress-wrap" onclick="openJump()"><div class="progress-track"><div class="progress-fill" id="progress-fill"><div class="progress-thumb"></div><div class="progress-num" id="progress-num"></div></div></div></div>
+</div>
+<div class="prac-counter" id="prac-counter" onclick="openJump()"></div>
+</div>
+<div class="section-badge" id="section-badge"><span class="section-badge-text" id="section-badge-text"></span></div>
+<div class="card-area">
+<div class="card-wrapper" onclick="flipCard()">
+<div class="card-inner" id="card-inner">
+<div class="card-face card-front"><div>
+<div class="card-lang-label">日本語</div>
+<div class="card-text ja" id="front-text"></div>
+<button class="speak-btn" id="front-speak" onclick="event.stopPropagation();speakJa()"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg> Speak</button>
+</div></div>
+<div class="card-face card-back"><div>
+<div class="card-lang-label">ENGLISH</div>
+<div class="card-text en" id="back-text"></div>
+<button class="speak-btn" id="back-speak" onclick="event.stopPropagation();speakEn()"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg> Speak</button>
+</div></div>
+</div></div>
+<div class="tap-hint" id="tap-hint">タップで答えを見る</div>
+<div class="action-row hidden" id="action-row">
+<button class="action-btn wrong" onclick="answerCard(false)">✕</button>
+<button class="action-btn correct" onclick="answerCard(true)">◯</button>
+</div>
+</div>
+<div class="score-bar" id="score-bar">
+<div class="score-item"><div class="score-dot" style="background:#52B788"></div><span class="score-num" id="score-correct">0</span></div>
+<div class="score-item"><div class="score-dot" style="background:#EF476F"></div><span class="score-num" id="score-wrong">0</span></div>
+</div>
+<div class="auto-bar" id="auto-bar">
+<div class="auto-timer-ring"><svg width="32" height="32" viewBox="0 0 40 40"><circle class="ring-bg" cx="20" cy="20" r="17"/><circle class="ring-fg" id="ring-fg" cx="20" cy="20" r="17" stroke-dasharray="106.81" stroke-dashoffset="0"/></svg><div class="auto-timer-text" id="timer-text">5</div></div>
+<button class="auto-pause-btn" onclick="toggleAutoPause()"><svg id="pause-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><svg id="play-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="5 3 19 12 5 21 5 3"/></svg><span id="pause-label">一時停止</span></button>
+</div>
+</div>
+
+<!-- Jump -->
+<div class="jump-overlay" id="jump-overlay" onclick="if(event.target===this)closeJump()">
+<div class="jump-modal">
+<div class="jump-modal-title">問題にジャンプ</div>
+<div class="jump-grid" id="jump-grid"></div>
+<button class="jump-close" onclick="closeJump()">閉じる</button>
+</div>
+</div>
+
+<!-- RESULT -->
+<div id="result-screen">
+<div class="result-card">
+<div class="result-pct" id="result-pct"></div>
+<div class="result-sub" id="result-sub"></div>
+<div class="result-stats">
+<div><div class="result-stat-num" style="color:#52B788" id="result-correct">0</div><div class="result-stat-label">Correct</div></div>
+<div class="result-divider"></div>
+<div><div class="result-stat-num" style="color:#EF476F" id="result-wrong">0</div><div class="result-stat-label">Wrong</div></div>
+</div>
+<button class="result-btn primary" onclick="startPractice(lastItems)">もう一度</button>
+<div class="retry-label" id="retry-label"></div>
+<button class="result-btn retry" id="retry-wrong-btn" onclick="retryWrong()">❌ だけ再チャレンジ (<span id="retry-count">0</span>問)</button>
+<button class="result-btn secondary" style="margin-top:8px" onclick="goToMenu()">メニューに戻る</button>
+</div>
+</div>
+
+<script>
+var exData=[{"id": "Ex.2", "sections": [{"title": "to不定詞（形容詞的用法）", "items": [{"ja": "読むための本", "en": "a book to read"}, {"ja": "行く場所", "en": "a place to go"}, {"ja": "売るための絵", "en": "a picture to sell"}, {"ja": "住む家", "en": "a house to live"}, {"ja": "伝えるべき話", "en": "a story to tell"}, {"ja": "修理すべきパソコン", "en": "a computer to repair"}, {"ja": "メモをとるためのペン", "en": "a pen to take notes"}, {"ja": "掃除すべき机", "en": "a desk to clean"}, {"ja": "贈るプレゼント", "en": "a present to give"}, {"ja": "泊まる部屋", "en": "a room to stay"}, {"ja": "書くべき手紙", "en": "a letter to write"}, {"ja": "運転する車", "en": "a car to drive"}, {"ja": "会うべき人", "en": "a person (someone) to meet"}, {"ja": "ピクニックを楽しめる公園", "en": "a park to enjoy a picnic"}, {"ja": "解くべき問題", "en": "a problem to solve"}, {"ja": "買うべきチケット", "en": "a ticket to buy"}, {"ja": "撮るべき写真", "en": "a picture to take"}, {"ja": "尋ねるべき質問", "en": "a question to ask"}, {"ja": "飾る部屋", "en": "a room to decorate"}, {"ja": "送るべきメッセージ", "en": "a message to send"}, {"ja": "見るべきショー", "en": "a show to watch"}, {"ja": "勝つべき試合", "en": "a game to win"}, {"ja": "行うべきスピーチ", "en": "a speech to give"}, {"ja": "達成すべき目標", "en": "a goal to achieve"}, {"ja": "下すべき決定", "en": "a decision to make"}, {"ja": "参加すべきチーム", "en": "a team to join"}, {"ja": "議論すべき問題", "en": "a problem to discuss"}, {"ja": "直面すべき課題", "en": "a challenge to face"}, {"ja": "共有する話", "en": "a story to share"}, {"ja": "従うべきルール", "en": "a rule to follow"}, {"ja": "向上させるべきスキル", "en": "a skill to improve"}, {"ja": "完成させるべきプロジェクト", "en": "a project to complete"}]}], "total": 32}, {"id": "Ex.3", "sections": [{"title": "to不定詞（副詞的用法）", "items": [{"ja": "彼女は一生懸命勉強する＋試験に合格するために。", "en": "She studies hard to pass the exam."}, {"ja": "彼は早く出発した＋電車に間に合うように。", "en": "He left early to catch the train."}, {"ja": "彼らは一緒に働いた＋プロジェクトを完成させるために。", "en": "They worked together to complete the project."}, {"ja": "私は店に行った＋牛乳を買うために。", "en": "I went to the store to buy some milk."}, {"ja": "彼女は速く走った＋レースに勝つために。", "en": "She ran fast to win the race."}, {"ja": "彼らは都市に引っ越した＋新しい生活を始めるために。", "en": "They moved to the city to start a new life."}, {"ja": "私たちは会議を開いた＋その問題を議論するために。", "en": "We had a meeting to discuss the problem."}, {"ja": "彼は一生懸命働いた＋お金を貯めるために。", "en": "He worked hard to save money."}, {"ja": "彼女は図書館へ行った＋本を借りるために。", "en": "She went to the library to borrow a book."}, {"ja": "私はクラブに入会した＋知識を深めるために。", "en": "I joined the club to deepen my knowledge."}, {"ja": "私はあなたにしてほしい＋その本を読むことを。", "en": "I want you to read the book."}, {"ja": "彼はMaryに頼んだ＋ピアノを弾くように。", "en": "He asked Mary to play the piano."}, {"ja": "母は私たちに言った＋静かにするように。", "en": "Our mother told us to be quiet."}, {"ja": "彼女は悲しかった＋さようならを言うのが。", "en": "She was sad to say goodbye."}, {"ja": "私は興奮した＋チームに参加して。", "en": "I was excited to join the team."}, {"ja": "彼は驚いた＋その結果を見て。", "en": "He was surprised to see the result."}, {"ja": "すみません＋お邪魔して。", "en": "I'm sorry to interrupt you."}, {"ja": "彼は成長した＋そして有名な歌手になった。", "en": "He grew up to become a famous singer."}, {"ja": "彼は幸運だった＋チケットを手に入れて。", "en": "He was lucky to get a ticket."}, {"ja": "私たちは嬉しかった＋イベントに参加して。", "en": "We were glad to join the event."}, {"ja": "彼女は誇りに思った＋その賞を受賞して。", "en": "She was proud to win the prize."}, {"ja": "この箱は重すぎる＋運ぶには。", "en": "This box is too heavy to carry."}, {"ja": "彼女は若すぎる＋運転するには。", "en": "She is too young to drive."}, {"ja": "遅すぎる＋今出かけるには。", "en": "It's too late to go out now."}, {"ja": "そのケーキは甘すぎる＋食べるには。", "en": "The cake is too sweet to eat."}, {"ja": "彼女は充分上手く歌う＋オーディションに合格するほど。", "en": "She sings well enough to pass auditions."}, {"ja": "彼は充分賢い＋試験に合格するのに。", "en": "He is smart enough to pass the exam."}]}], "total": 27}, {"id": "Ex.4", "sections": [{"title": "関係代名詞（主格）", "items": [{"ja": "あなたの隣に座っている女の子", "en": "the girl who sits next to you"}, {"ja": "私を助けてくれる先生", "en": "the teacher who helps me"}, {"ja": "その質問に答える生徒", "en": "the student who answers the question"}, {"ja": "その店で働いている男性", "en": "the man who works at the store"}, {"ja": "テーブルの上にある本", "en": "the book that is on the table"}, {"ja": "赤いシャツを着ている男の子", "en": "the boy who is wearing a red shirt"}, {"ja": "外で遊んでいる子供", "en": "the child who is playing outside"}, {"ja": "路上で止まった車", "en": "the car that stopped on the street"}, {"ja": "通りの向こうに住んでいる女性", "en": "the woman who lives across the street"}, {"ja": "ギターを弾く男の子", "en": "the boy who plays the guitar"}, {"ja": "あなたに電話をかけた人", "en": "the person who called you"}, {"ja": "私をパーティーに招待した友人", "en": "the friend who invited me to the party"}, {"ja": "眼鏡をかけている女の子", "en": "the girl who is wearing glasses"}, {"ja": "英語を教える先生", "en": "the teacher who teaches English"}, {"ja": "そのレースで優勝した人", "en": "the person who won the race"}, {"ja": "私の家に住んでいる猫", "en": "the cat that lives in my house"}, {"ja": "ピアノを上手に弾ける男の子", "en": "the boy who plays the piano well"}, {"ja": "病院で働いている女性", "en": "the woman who works at the hospital"}, {"ja": "図書館で勉強している男の子", "en": "the boy who is studying in the library"}, {"ja": "パーティーに来た人たち", "en": "the people who came to the party"}, {"ja": "公園で走っている犬", "en": "the dog that is running in the park"}, {"ja": "ステージで歌っている歌手", "en": "the singer who is singing on stage"}, {"ja": "そのコンテストで優勝した女の子", "en": "the girl who won the contest"}, {"ja": "そのコンペで優勝した男の子", "en": "the boy who won the competition"}, {"ja": "この絵を描いたアーティスト", "en": "the artist who painted this picture"}, {"ja": "その賞を受賞した映画", "en": "the movie that won the award"}, {"ja": "その試合で勝ったチーム", "en": "the team that won the game"}, {"ja": "この製品を開発した会社", "en": "the company that developed this product"}, {"ja": "この方法を発見した科学者", "en": "the scientist who discovered this method"}, {"ja": "サッカーをする男の子", "en": "the boy who plays soccer"}, {"ja": "そのパン屋で働いている男性", "en": "the man who works at the bakery"}, {"ja": "昨日私を訪ねてきた人", "en": "the person who visited me yesterday"}]}], "total": 32}, {"id": "Ex.5", "sections": [{"title": "関係代名詞（目的格）", "items": [{"ja": "私が昨日読んだ本", "en": "the book which I read yesterday"}, {"ja": "私が公園で見た犬", "en": "the dog which I saw in the park"}, {"ja": "昨晩私たちが見た映画", "en": "the movie which we watched last night"}, {"ja": "昨日私が電話した人", "en": "the person who I called yesterday"}, {"ja": "コンサートで彼女が歌った歌", "en": "the song which she sang at the concert"}, {"ja": "私が先週買った椅子", "en": "the chair which I bought last week"}, {"ja": "私が昨日失くしたペン", "en": "the pen that I lost yesterday"}, {"ja": "彼が運転する車", "en": "the car which he drives"}, {"ja": "彼女がくれたプレゼント", "en": "the present which she gave me"}, {"ja": "あなたが招待した人", "en": "the person who you invited"}, {"ja": "彼らが勧めた映画", "en": "the movie which they recommended"}, {"ja": "今朝私が受け取った手紙", "en": "the letter which I received this morning"}, {"ja": "彼女が描いた絵", "en": "the picture which she painted"}, {"ja": "私があなたに買ったプレゼント", "en": "the present which I bought for you"}, {"ja": "私たちが昨夏訪れた街", "en": "the city which we visited last summer"}, {"ja": "私がした質問", "en": "the question which I asked"}, {"ja": "あなたが今読んでいる本", "en": "the book which you are reading now"}, {"ja": "彼が解決した問題", "en": "the problem which he solved"}, {"ja": "先週末私が見た映画", "en": "the movie which I watched last weekend"}, {"ja": "昨晩私が終わらせた宿題", "en": "the homework that I finished last night"}, {"ja": "私が尊敬する先生", "en": "the teacher who I respect"}, {"ja": "私たちがラジオで聞いた歌", "en": "the song which we heard on the radio"}, {"ja": "彼が監督した映画", "en": "the movie which he directed"}, {"ja": "彼女が話していた人", "en": "the person who she was talking to"}, {"ja": "彼がパーティーで撮った写真", "en": "the picture which he took at the party"}, {"ja": "私たちが昨夏行った場所", "en": "the place which we went to last summer"}, {"ja": "図書館で見かけた学生", "en": "the student who I saw at the library"}, {"ja": "公園で会った友達", "en": "the friend who I met at the park"}, {"ja": "あなたが私にくれた答え", "en": "the answer which you gave me"}, {"ja": "彼が私たちに話してくれた話", "en": "the story which he told us"}, {"ja": "彼女がその店で買ったバッグ", "en": "the bag that she bought at the store"}, {"ja": "私が昨日欠席したクラス", "en": "the class which I missed yesterday"}]}], "total": 32}, {"id": "Ex.6", "sections": [{"title": "関係副詞（where）", "items": [{"ja": "私がその本を買った店", "en": "the store where I bought the book"}, {"ja": "彼女が働いている都市", "en": "the city where she works"}, {"ja": "彼が育った家", "en": "the house where he grew up"}, {"ja": "彼らが会う場所", "en": "the place where they meet"}, {"ja": "私たちが滞在した島", "en": "the island where we stayed"}, {"ja": "彼女が教えている学校", "en": "the school where she teaches"}, {"ja": "私が勉強する図書館", "en": "the library where I study"}, {"ja": "私が生まれた国", "en": "the country where I was born"}, {"ja": "私たちがよく会うカフェ", "en": "the café where we often meet"}, {"ja": "彼が住んでいる通り", "en": "the street where he lives"}]}, {"title": "関係副詞（when）", "items": [{"ja": "彼がミスをした瞬間", "en": "the moment when he made a mistake"}, {"ja": "電車が到着する時間", "en": "the time when the train arrives"}, {"ja": "私たちが京都を訪れた夏", "en": "the summer when we visited Kyoto"}, {"ja": "彼女が去った日", "en": "the day when she left"}, {"ja": "彼らがこの橋を建てた年", "en": "the year when they built this bridge"}, {"ja": "彼がレースに勝った瞬間", "en": "the moment when he won the race"}, {"ja": "あなたが試験を受けた日", "en": "the day when you took the test"}, {"ja": "私たちが花火を見た夜", "en": "the night when we saw the fireworks"}, {"ja": "雪がたくさん降った冬", "en": "the winter when it snowed a lot"}]}, {"title": "関係副詞（why）", "items": [{"ja": "彼女が泣いている理由", "en": "the reason why she is crying"}, {"ja": "私が家にいた理由", "en": "the reason why I was at home"}, {"ja": "私が遅れた理由", "en": "the reason why I was late"}, {"ja": "私たちが英語を勉強する理由", "en": "the reason why we study English"}, {"ja": "私がこの歌を好きな理由", "en": "the reason why I like this song"}, {"ja": "彼らが引っ越した理由", "en": "the reason why they moved"}, {"ja": "彼が仕事を辞めた理由", "en": "the reason why he quit his job"}, {"ja": "私たちがもっと時間を必要とする理由", "en": "the reason why we need more time"}, {"ja": "彼らが笑った理由", "en": "the reason why they laughed"}]}, {"title": "関係副詞（how）", "items": [{"ja": "このようにして私たちは問題を解決した。", "en": "This is how we solved the problem."}, {"ja": "このようにして彼らはその家を建てた。", "en": "This is how they built the house."}, {"ja": "そのようにして彼女はケーキを作る。", "en": "That's how she makes a cake."}, {"ja": "そのようにして彼らはその試合に勝った。", "en": "That's how they won the game."}]}], "total": 32}, {"id": "Ex.7", "sections": [{"title": "現在分詞（-ing）", "items": [{"ja": "公園で遊んでいる子供", "en": "a child playing in the park"}, {"ja": "部屋で寝ている犬", "en": "a dog sleeping in the room"}, {"ja": "海で泳いでいる女性", "en": "a woman swimming in the sea"}, {"ja": "自転車に乗っている男の子", "en": "a boy riding a bike"}, {"ja": "外で走っている少年", "en": "a boy running outside"}, {"ja": "花を見ている女の子", "en": "a girl looking at flowers"}, {"ja": "電車を待っている人々", "en": "people waiting for a train"}, {"ja": "ピアノを弾いている学生", "en": "a student playing the piano"}, {"ja": "教室で勉強している生徒", "en": "a student studying in the classroom"}, {"ja": "友達と話している少女", "en": "a girl talking with her friend"}, {"ja": "音楽を聞いている少年", "en": "a boy listening to music"}, {"ja": "手紙を書いている女性", "en": "a woman writing a letter"}, {"ja": "部屋を掃除している男の子", "en": "a boy cleaning the room"}, {"ja": "車を運転している男性", "en": "a man driving a car"}, {"ja": "ケーキを作っている母親", "en": "a mother making a cake"}, {"ja": "公園でサッカーをしている少年たち", "en": "boys playing soccer in the park"}, {"ja": "机で本を読んでいる生徒", "en": "a student reading a book at the desk"}, {"ja": "公園で話している女の子たち", "en": "girls talking in the park"}, {"ja": "田舎に住んでいる家族", "en": "a family living in the countryside"}, {"ja": "台所で料理をしている女性", "en": "a woman cooking in the kitchen"}, {"ja": "笑っている赤ちゃん", "en": "a baby laughing"}, {"ja": "海で遊んでいる人々", "en": "people playing in the sea"}, {"ja": "砂浜で遊んでいる子供たち", "en": "children playing on the beach"}, {"ja": "ベンチに座っている年配者", "en": "an elderly man sitting on a bench"}, {"ja": "ピクニックを楽しんでいる人々", "en": "people enjoying a picnic"}, {"ja": "木の下で本を読んでいる少女", "en": "a girl reading a book under the tree"}, {"ja": "工場で働いている男性", "en": "a man working at the factory"}, {"ja": "モールで買い物をしている女性", "en": "a woman shopping at the mall"}, {"ja": "数学を教えている先生", "en": "a teacher teaching math"}, {"ja": "ネズミを追いかけている猫", "en": "a cat chasing a mouse"}, {"ja": "駅に近づいている電車", "en": "a train approaching the station"}, {"ja": "美しく咲いている花", "en": "a flower blooming beautifully"}]}], "total": 32}, {"id": "Ex.8", "sections": [{"title": "過去分詞（-ed）", "items": [{"ja": "英語で書かれた手紙", "en": "a letter written in English"}, {"ja": "公園で撮られた写真", "en": "a picture taken in the park"}, {"ja": "ドアに書かれた名前", "en": "a name written on the door"}, {"ja": "両親からもらったプレゼント", "en": "a present given by my parents"}, {"ja": "学校で使われる教科書", "en": "a textbook used at school"}, {"ja": "昨日見つかった鍵", "en": "a key found yesterday"}, {"ja": "多くの国で話されている言語", "en": "a language spoken in many countries"}, {"ja": "動物園で見られる動物", "en": "an animal seen at the zoo"}, {"ja": "昨年出版された本", "en": "a book published last year"}, {"ja": "チームによって解決された問題", "en": "a problem solved by the team"}, {"ja": "お母さんが焼いたケーキ", "en": "a cake baked by my mother"}, {"ja": "日曜日に開かれたイベント", "en": "an event held on Sunday"}, {"ja": "海外で生まれた赤ちゃん", "en": "a baby born overseas"}, {"ja": "公園に置き忘れられたカバン", "en": "a bag left in the park"}, {"ja": "昨晩見られた星", "en": "a star seen last night"}, {"ja": "その女性によって作られたドレス", "en": "a dress made by the woman"}, {"ja": "春に植えられた花", "en": "a flower planted in spring"}, {"ja": "映画で使われた曲", "en": "a song used in the movie"}, {"ja": "父から与えられたアドバイス", "en": "advice given by my father"}, {"ja": "19世紀に建てられた橋", "en": "a bridge built in the 19th century"}, {"ja": "市場で買われた果物", "en": "fruit bought at the market"}, {"ja": "湖で見つかったボート", "en": "a boat found in the lake"}, {"ja": "友人に送られた手紙", "en": "a letter sent to a friend"}, {"ja": "地震で被害を受けた建物", "en": "a building damaged by the earthquake"}, {"ja": "彼女の友人によって書かれた手紙", "en": "a letter written by her friend"}, {"ja": "家の前に駐車された車", "en": "a car parked in front of the house"}, {"ja": "ベートーベンによって作曲された歌", "en": "a song composed by Beethoven"}, {"ja": "内側から鍵がかけられたドア", "en": "a door locked from the inside"}, {"ja": "川の上に建設された橋", "en": "a bridge constructed over the river"}, {"ja": "彼女の母親によって焼かれたケーキ", "en": "a cake baked by her mother"}, {"ja": "テーブルの上に置かれた電話", "en": "a phone put on the table"}, {"ja": "ラジオで聞こえた歌", "en": "a song heard on the radio"}]}], "total": 32}, {"id": "Ex.9", "sections": [{"title": "分詞構文", "items": [{"ja": "私は学校へ歩いた＋歌を歌いながら。", "en": "I walked to school singing a song."}, {"ja": "彼女は本を読んでいた＋ベンチに座って。", "en": "She was sitting on the bench reading a book."}, {"ja": "私は自分の夢について考えた＋星を見ながら。", "en": "I thought about my dreams looking at the stars."}, {"ja": "彼女は朝食を食べた＋ニュースを見ながら。", "en": "She ate breakfast watching the news."}, {"ja": "私たちは話した＋空を見ながら。", "en": "We talked looking at the sky."}, {"ja": "私はバスを待った＋花を持って。", "en": "I waited for the bus holding some flowers."}, {"ja": "赤ちゃんは泣いた＋おもちゃを握りながら。", "en": "The baby cried holding his toy."}, {"ja": "私は部屋を掃除した＋お気に入りの歌を歌いながら。", "en": "I cleaned my room singing my favorite song."}, {"ja": "私たちは家へ歩いた＋その日のことを話しながら。", "en": "We walked home talking about the day."}, {"ja": "私はテレビを見た＋ポップコーンを食べながら。", "en": "I watched TV eating popcorn."}, {"ja": "彼女は絵を描いた＋ラジオを聴きながら。", "en": "She drew a picture listening to the radio."}, {"ja": "彼は本を読んでいた＋ベッドに横になって。", "en": "He was reading a book lying on the bed."}, {"ja": "彼は電車を待った＋スマホを見ながら。", "en": "He waited for the train looking at his phone."}, {"ja": "私は英語を勉強していた＋辞書を使って。", "en": "I was studying English using my dictionary."}, {"ja": "彼女はキッチンで働いた＋昼食を作りながら。", "en": "She worked in the kitchen preparing lunch."}, {"ja": "彼は自転車を修理した＋道具を使って。", "en": "He fixed his bike using his tools."}, {"ja": "彼女は踊った＋お気に入りの歌を聴きながら。", "en": "She danced listening to her favorite song."}, {"ja": "小さな男の子は母親のもとへ走った＋泣きながら。", "en": "The little boy ran to his mother crying."}, {"ja": "私たちは昼食を食べた＋木の下に座って。", "en": "We ate lunch sitting under a tree."}, {"ja": "その男はゆっくり歩いた＋過去を思い出しながら。", "en": "The man walked slowly thinking about his past."}, {"ja": "私たちは川沿いを歩いた＋石を集めながら。", "en": "We walked along the river collecting stones."}, {"ja": "彼女は微笑んだ＋幸せな瞬間を思い出しながら。", "en": "She smiled remembering a happy moment."}, {"ja": "私は駅で待った＋切符を持ちながら。", "en": "I waited at the station holding my ticket."}, {"ja": "私は犬と遊んだ＋床に座って。", "en": "I sat on the floor playing with my dog."}, {"ja": "この家は素敵だ＋緑色に塗られていて。", "en": "This house looks nice painted green."}, {"ja": "ネズミは速く走った＋猫に追いかけられて。", "en": "The mouse ran fast chased by a cat."}, {"ja": "私は寝た＋疲れて。", "en": "I went to bed tired."}, {"ja": "彼は歌を歌っていた＋酔って。", "en": "He was singing a song drunk."}, {"ja": "私は彼と話した＋とても興奮して。", "en": "I talked with him very excited."}, {"ja": "彼女はベッドに横になった＋疲れ果てて。", "en": "She lay on the bed exhausted."}, {"ja": "彼は試合に出られなかった＋怪我で。", "en": "He couldn't play the game injured."}, {"ja": "彼は立っていた＋腕を組んで。", "en": "He stood with his arms crossed."}]}], "total": 32}, {"id": "Ex.10", "sections": [{"title": "名詞節（what）", "items": [{"ja": "彼がしていること・彼が何をしているか", "en": "what he is doing"}, {"ja": "彼女が言ったこと・彼女が何を言ったか", "en": "what she said"}, {"ja": "私が買うべきもの・私が何を買うべきか", "en": "what I should buy"}, {"ja": "彼が持っている物・彼が何を持っているか", "en": "what he has"}, {"ja": "彼女がしたいこと・彼女が何をしたいか", "en": "what she wants to do"}, {"ja": "彼が考えている事・彼が何を考えているか", "en": "what he is thinking"}, {"ja": "彼女が見ている物・彼女が何を見ているか", "en": "what she is looking at"}, {"ja": "あなたが学んだ事・あなたが何を学んだか", "en": "what you learned"}, {"ja": "私たちが決める事・私たちが何を決めるか", "en": "what we decide"}, {"ja": "彼が言いたかった事・彼が何を言いたかったか", "en": "what he wanted to say"}, {"ja": "すべきこと・何をするべきか", "en": "what to do"}, {"ja": "何が問題なのか", "en": "what the problem is"}, {"ja": "それが何であるか", "en": "what it is"}, {"ja": "彼が何時に家に戻るか", "en": "what time he will come home"}]}, {"title": "名詞節（where）", "items": [{"ja": "彼がどこに行ったか", "en": "where he went"}, {"ja": "私たちがどこで会うか", "en": "where we will meet"}, {"ja": "彼女がどこに住んでいるか", "en": "where she lives"}, {"ja": "彼らがどこで働いているか", "en": "where they work"}, {"ja": "あなたがどこに行くか", "en": "where you go"}, {"ja": "その店がどこにあるか", "en": "where the store is"}, {"ja": "彼がどこにいたか", "en": "where he was"}, {"ja": "私がどこに座るべきか", "en": "where I should sit"}, {"ja": "彼女がどこに行ったか", "en": "where she went"}, {"ja": "私たちがどこで食事するか", "en": "where we will have dinner"}, {"ja": "彼がどこに泊まるか", "en": "where he will stay"}, {"ja": "どこに行くべきか", "en": "where to go"}, {"ja": "あなたがどこで買ったか", "en": "where you bought it"}, {"ja": "そのイベントがどこで開催されるか", "en": "where the event will take place"}, {"ja": "私がどこで英語を学んでいるか", "en": "where I learn English"}]}, {"title": "名詞節（when）", "items": [{"ja": "会議がいつ始まるか", "en": "when the meeting starts"}, {"ja": "彼がいつ戻るか", "en": "when he returns"}, {"ja": "電車がいつ出発するか", "en": "when the train leaves"}, {"ja": "あなたがいつ来るか", "en": "when you are coming"}, {"ja": "授業がいつ終わるか", "en": "when the class finishes"}, {"ja": "彼がいつ仕事を終えるか", "en": "when he finishes work"}, {"ja": "映画がいつ始まるか", "en": "when the movie starts"}, {"ja": "彼がいつ到着するか", "en": "when he arrives"}, {"ja": "いつ出発すべきか", "en": "when to leave"}, {"ja": "彼がいつ会議に出席するか", "en": "when he attends the meeting"}, {"ja": "その試合がいつ行われるか", "en": "when the game takes place"}]}, {"title": "名詞節（why）", "items": [{"ja": "彼がなぜ怒っているか", "en": "why he is angry"}, {"ja": "彼女がなぜ泣いているか", "en": "why she is crying"}, {"ja": "あなたがなぜ遅れたか", "en": "why you were late"}, {"ja": "その決定がなぜ下されたか", "en": "why the decision was made"}, {"ja": "彼がなぜそれを言ったか", "en": "why he said that"}, {"ja": "何が原因で遅れたか", "en": "why the delay occurred"}, {"ja": "彼女がなぜその仕事を辞めたか", "en": "why she quit the job"}, {"ja": "私たちがなぜこの選択をしたか", "en": "why we made this choice"}, {"ja": "彼がなぜ一生懸命働くか", "en": "why he works hard"}, {"ja": "あなたがなぜそれをしているか", "en": "why you are doing that"}]}, {"title": "名詞節（who）", "items": [{"ja": "彼が誰と話しているか", "en": "who he is talking to"}, {"ja": "彼女が誰を選ぶか", "en": "who she will choose"}, {"ja": "彼らが誰を招待するか", "en": "who they will invite"}, {"ja": "私たちが誰を助けるべきか", "en": "who we should help"}, {"ja": "誰がそれをしたか", "en": "who did it"}, {"ja": "あなたが誰と一緒に行くか", "en": "who you are going with"}, {"ja": "彼女が誰を待っているか", "en": "who she is waiting for"}, {"ja": "彼が誰にそのことを話したか", "en": "who he told that to"}, {"ja": "彼が誰と結婚したか", "en": "who he married"}, {"ja": "彼女が誰を尊敬しているか", "en": "who she respects"}, {"ja": "誰がこれを買ったか", "en": "who bought it"}, {"ja": "誰に会うべきか", "en": "who to see"}]}, {"title": "名詞節（how）", "items": [{"ja": "彼がどのようにそれをしたか", "en": "how he did it"}, {"ja": "それがどのように動くか", "en": "how it works"}, {"ja": "彼女がどのように感じているか", "en": "how she feels"}, {"ja": "それをどのように使うか", "en": "how to use it"}, {"ja": "彼がどのように勉強しているか", "en": "how he is studying"}, {"ja": "彼女がどのように料理するか", "en": "how she cooks"}, {"ja": "あなたがどのようにそれを解決したか", "en": "how you solved it"}, {"ja": "その問題がどのように解決されたか", "en": "how the problem was solved"}, {"ja": "彼がどのように質問を答えたか", "en": "how he answered the question"}, {"ja": "彼女がどのように目標を達成したか", "en": "how she achieved her goal"}, {"ja": "あなたがどう生きるか", "en": "how you live"}, {"ja": "弁護士がそれをどう説明するか", "en": "how the lawyer will explain it"}]}, {"title": "名詞節（which）", "items": [{"ja": "彼がどちらを選んだか", "en": "which one he chose"}, {"ja": "あなたがどちらと一緒に行くつもりか", "en": "which one you are going with"}, {"ja": "私たちがどちらに行くべきか", "en": "which one we should go to"}, {"ja": "彼がどちらの服を着るつもりか", "en": "which clothes he will wear"}, {"ja": "あなたがどちらを持っているか", "en": "which one you have"}, {"ja": "彼がどちらの本を読むつもりか", "en": "which book he is going to read"}, {"ja": "彼女がどちらを選んだか", "en": "which one she picked"}, {"ja": "どちらが正しいか", "en": "which one is correct"}, {"ja": "彼がどの車を売るか", "en": "which car he will sell"}, {"ja": "あなたがどちらを買うべきか", "en": "which one you should buy"}, {"ja": "どの会社に頼めばいいか", "en": "which company to ask"}]}, {"title": "名詞節（whose）", "items": [{"ja": "彼が誰のバッグを持っているか", "en": "whose bag he is holding"}, {"ja": "それが誰のペンか", "en": "whose pen that is"}, {"ja": "彼女が誰の家に行くか", "en": "whose house she is going to"}, {"ja": "これが誰の財布か", "en": "whose wallet this is"}, {"ja": "彼が誰の本を持っているか", "en": "whose book he is holding"}, {"ja": "それが誰の車か", "en": "whose car it is"}, {"ja": "彼女が誰のチケットを持っているか", "en": "whose ticket she has"}, {"ja": "これが誰のプレゼントか", "en": "whose present this is"}, {"ja": "それが誰の責任か", "en": "whose responsibility it is"}, {"ja": "彼女が誰の写真を見せているか", "en": "whose photo she is showing"}]}, {"title": "名詞節（whether）", "items": [{"ja": "彼が来るかどうか", "en": "whether he will come"}, {"ja": "それが本当かどうか", "en": "whether it is true"}, {"ja": "私たちがそのイベントに参加するかどうか", "en": "whether we will attend the event"}, {"ja": "彼女がそれを理解しているかどうか", "en": "whether she understands it"}, {"ja": "彼が遅れるかどうか", "en": "whether he will be late"}, {"ja": "あなたがそれをするかどうか", "en": "whether you will do it"}, {"ja": "それが可能かどうか", "en": "whether it is possible"}, {"ja": "彼がそれに同意するかどうか", "en": "whether he agrees with it"}, {"ja": "あなたがそれを買うかどうか", "en": "whether you will buy it"}, {"ja": "彼女が参加するかどうか", "en": "whether she will participate"}]}, {"title": "名詞節（how+形容詞・副詞）", "items": [{"ja": "彼女が何歳であるか", "en": "how old she is"}, {"ja": "あなたがどれくらいの身長か", "en": "how tall you are"}, {"ja": "それがどれくらい重いか", "en": "how heavy it is"}, {"ja": "彼らがどれくらい疲れているか", "en": "how tired they are"}, {"ja": "私がどれくらい眠いか", "en": "how sleepy I am"}, {"ja": "その男の子がどれだけワクワクしているか", "en": "how excited the boy is"}, {"ja": "彼がどれくらい悲しんだか", "en": "how sad he was"}, {"ja": "その女の子がどれくらい嬉しかったか", "en": "how happy she was"}, {"ja": "その犬がどれくらい大きくなるか", "en": "how big the dog will be"}, {"ja": "私がどれくらい空腹か", "en": "how hungry I am"}, {"ja": "彼女がどれくらい怒るか", "en": "how angry she gets"}, {"ja": "その車がどれくらい速く走るか", "en": "how fast the car runs"}, {"ja": "そのPCがどれくらい速く動くか", "en": "how fast the PC works"}, {"ja": "その男の子がどれくらい賢いか", "en": "how smart the boy is"}, {"ja": "私の同僚がどれだけ優秀か", "en": "how good my coworker is"}, {"ja": "彼女がどれだけ努力したか", "en": "how much effort she made"}, {"ja": "あなたがどれだけ準備したか", "en": "how much you prepared"}, {"ja": "彼がどれくらいの時間かかったか", "en": "how long it took him"}, {"ja": "彼女がどれだけ素晴らしいか", "en": "how wonderful she is"}, {"ja": "その会議がどれだけ長かったか", "en": "how long the meeting was"}, {"ja": "彼がそれをどれだけ好きか", "en": "how much he likes it"}, {"ja": "彼女がどれくらい速くそれをやったか", "en": "how fast she did it"}, {"ja": "それがどれだけ重要か", "en": "how important it is"}, {"ja": "彼女がどれくらい上手にそれを説明するか", "en": "how well she explains it"}, {"ja": "彼がどれだけ人気があったか", "en": "how popular he was"}]}], "total": 130}, {"id": "Ex.11", "sections": [{"title": "前置詞（at）", "items": [{"ja": "駅にいる人々", "en": "the people at the station"}, {"ja": "公園の子供たち", "en": "the children at the park"}, {"ja": "その店の男性", "en": "the man at the shop"}, {"ja": "バス停の女性", "en": "the woman at the bus stop"}, {"ja": "見て＋私を。", "en": "Look at me."}, {"ja": "それは始まる＋夜に。", "en": "It starts at night."}, {"ja": "彼は勉強した＋学校で。", "en": "He studied at school."}, {"ja": "彼らは待っていた＋駅で。", "en": "They waited at the station."}, {"ja": "彼女は立っている＋ドアのところに。", "en": "She is standing at the door."}]}, {"title": "前置詞（in）", "items": [{"ja": "部屋の中の本", "en": "the book in the room"}, {"ja": "公園にいる少年", "en": "the boy in the park"}, {"ja": "山の中の湖", "en": "the lake in the mountains"}, {"ja": "カバンの中のリンゴ", "en": "the apple in the bag"}, {"ja": "本の中の絵", "en": "the picture in the book"}, {"ja": "彼はいる＋部屋に。", "en": "He is in the room."}, {"ja": "彼らは遊んでいる＋公園で。", "en": "They are playing in the park."}, {"ja": "寒くなる＋冬は。", "en": "It gets cold in winter."}, {"ja": "何かがある＋箱の中に。", "en": "There is something in the box."}]}, {"title": "前置詞（to）", "items": [{"ja": "駅への道", "en": "the road to the station"}, {"ja": "学校への手紙", "en": "the letter to the school"}, {"ja": "東京行きのバス", "en": "the bus to Tokyo"}, {"ja": "友達への贈り物", "en": "the gift to my friend"}, {"ja": "そのドアの鍵", "en": "the key to the door"}, {"ja": "彼女は向かっている＋学校に。", "en": "She is going to school."}, {"ja": "彼らは走った＋駅まで。", "en": "They ran to the station."}, {"ja": "彼は行った＋バス停に。", "en": "He went to the bus stop."}, {"ja": "私たちは旅行に行った＋ヨーロッパへ。", "en": "We traveled to Europe."}]}, {"title": "前置詞（for）", "items": [{"ja": "子どもたちのための本", "en": "the book for children"}, {"ja": "彼女への手紙", "en": "the letter for her"}, {"ja": "学生向けのクラス", "en": "the class for students"}, {"ja": "犬の食べ物", "en": "the food for dogs"}, {"ja": "彼女は準備をした＋学校の。", "en": "She prepared for school."}, {"ja": "彼は働いた＋家族のために。", "en": "He worked for his family."}, {"ja": "彼らは勉強した＋テストのために。", "en": "They studied for the test."}, {"ja": "私たちは話し合った＋会議のために。", "en": "We discussed for the meeting."}]}, {"title": "前置詞（on）", "items": [{"ja": "テーブルの上の皿", "en": "the plate on the table"}, {"ja": "壁にかかっている絵", "en": "the picture on the wall"}, {"ja": "自転車に乗った少年", "en": "the boy on the bicycle"}, {"ja": "山の上の家", "en": "the house on the mountain"}, {"ja": "私は写真をかけた＋壁に。", "en": "I hung the photo on the wall."}, {"ja": "彼は乗っている＋自転車に。", "en": "He is on the bicycle."}, {"ja": "彼女は乗った＋電車に。", "en": "She got on the train."}, {"ja": "彼らはそれを見た＋テレビで。", "en": "They saw it on TV."}]}, {"title": "前置詞（of）", "items": [{"ja": "植物の葉っぱ", "en": "the leaves of the plant"}, {"ja": "家のドア", "en": "the door of the house"}, {"ja": "川の名前", "en": "the name of the river"}, {"ja": "クラスのメンバー", "en": "the members of the class"}, {"ja": "彼は聞いた＋それについて。", "en": "He heard of it."}, {"ja": "私は知っている＋そのニュースについて。", "en": "I know of the news."}, {"ja": "彼らは考えた＋それについて。", "en": "They thought of it."}]}, {"title": "前置詞（off）", "items": [{"ja": "テーブルから落ちたボール", "en": "the ball off the table"}, {"ja": "バスを降りる男の人", "en": "the man off the bus"}, {"ja": "船を降りた乗客", "en": "the passenger off the ship"}, {"ja": "木から取られたリンゴ", "en": "the apple off the tree"}, {"ja": "猫が飛び降りた＋テーブルから。", "en": "The cat jumped off the table."}, {"ja": "彼女は脱いだ＋帽子を。", "en": "She took off her hat."}, {"ja": "消してください＋電気を。", "en": "Please turn off the light."}, {"ja": "彼らは降りている＋飛行機から。", "en": "They are getting off the plane."}]}, {"title": "前置詞（from）", "items": [{"ja": "カナダ出身の男の人", "en": "the man from Canada"}, {"ja": "空港からのバス", "en": "the bus from the airport"}, {"ja": "ラジオから流れる音楽", "en": "the music from the radio"}, {"ja": "家から持ってきた本", "en": "the book from home"}, {"ja": "彼は帰ってきた＋学校から。", "en": "He came back from school."}, {"ja": "私は手紙をもらった＋友達から。", "en": "I got a letter from my friend."}, {"ja": "その音楽は流れている＋ラジオから。", "en": "The music is coming from the radio."}, {"ja": "彼らは出発した＋空港から。", "en": "They departed from the airport."}]}, {"title": "前置詞（by）", "items": [{"ja": "川のそばの家", "en": "the house by the river"}, {"ja": "バス停の近くの店", "en": "the shop by the bus stop"}, {"ja": "窓の近くの椅子", "en": "the chair by the window"}, {"ja": "橋の隣の建物", "en": "the building by the bridge"}, {"ja": "彼は来た＋車で。", "en": "He came by car."}, {"ja": "本は書かれた＋彼女によって。", "en": "The book was written by her."}, {"ja": "私たちは歩いた＋海の近くを。", "en": "We walked by the sea."}, {"ja": "彼らは通り過ぎた＋店のそばを。", "en": "They went by the shop."}]}, {"title": "前置詞（with）", "items": [{"ja": "カメラを持った少年", "en": "the boy with a camera"}, {"ja": "青い目をした女の子", "en": "the girl with blue eyes"}, {"ja": "大きなバッグを持った男の人", "en": "the man with a big bag"}, {"ja": "かわいい犬を連れた女性", "en": "the woman with a cute dog"}, {"ja": "彼は話した＋笑顔で。", "en": "He spoke with a smile."}, {"ja": "彼女は手紙を書いた＋ペンで。", "en": "She wrote a letter with a pen."}, {"ja": "私たちは踊った＋音楽と一緒に。", "en": "We danced with the music."}, {"ja": "彼は公園に行った＋友達と一緒に。", "en": "He went to the park with his friends."}]}, {"title": "前置詞（about）", "items": [{"ja": "音楽についての本", "en": "the book about music"}, {"ja": "彼についての話", "en": "the story about him"}, {"ja": "自然に関する映画", "en": "the movie about nature"}, {"ja": "テストに関する質問", "en": "the question about the test"}, {"ja": "彼は知らない＋その問題について。", "en": "He doesn't know about the problem."}, {"ja": "その本は＋旅行に関するものだ。", "en": "The book is about travel."}, {"ja": "彼らは考えている＋将来について。", "en": "They are thinking about the future."}]}], "total": 89}];
+// === State ===
+var currentItems=[],phraseIndex=0,flipped=false,scoreCorrect=0,scoreWrong=0,wrongItems=[],isRetryMode=false;
+var doShuffle=false,autoMode=false,autoFrontSec=5,autoBackSec=5,autoPaused=false,autoTimerId=null,autoCountdownId=null;
+var phraseStatus=[],lastItems=[],currentExId="",sectionChecked={},selectedExIdx=-1;
+var itemSections=[];// parallel to currentItems, stores section title
+
+// === Speech ===
+var cachedEnV=null,cachedJaV=null;
+function getV(lang){
+  var voices=speechSynthesis.getVoices();if(!voices.length)return null;
+  if(lang==='en'){
+    if(cachedEnV)return cachedEnV;
+    var p=[function(v){return v.lang==='en-US'&&/Google US English/i.test(v.name)},function(v){return v.lang==='en-US'&&/Google/i.test(v.name)},function(v){return v.lang==='en-US'&&/Samantha/i.test(v.name)},function(v){return v.lang==='en-US'},function(v){return v.lang.indexOf('en')===0}];
+    for(var i=0;i<p.length;i++){var f=voices.find(p[i]);if(f){cachedEnV=f;return f}}
+  }else{
+    if(cachedJaV)return cachedJaV;
+    var p=[function(v){return v.lang==='ja-JP'&&/Google/i.test(v.name)},function(v){return v.lang==='ja-JP'},function(v){return v.lang.indexOf('ja')===0}];
+    for(var i=0;i<p.length;i++){var f=voices.find(p[i]);if(f){cachedJaV=f;return f}}
+  }
+  return null;
+}
+function speak(text,lang){
+  if(!('speechSynthesis' in window))return;speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(text);
+  u.lang=lang==='en'?'en-US':'ja-JP';u.rate=lang==='en'?0.9:1.05;u.pitch=lang==='en'?1.0:0.85;
+  var v=getV(lang);if(v)u.voice=v;speechSynthesis.speak(u);
+}
+function speakJa(){speak(currentItems[phraseIndex].ja,'ja')}
+function speakEn(){speak(currentItems[phraseIndex].en,'en')}
+if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=function(){cachedEnV=null;cachedJaV=null};setTimeout(function(){speechSynthesis.getVoices()},100)}
+
+// === Menu ===
+function buildMenu(){
+  var html="";
+  for(var i=0;i<exData.length;i++){
+    var ex=exData[i];
+    var secNames=[];for(var j=0;j<ex.sections.length;j++)secNames.push(ex.sections[j].title+"("+ex.sections[j].items.length+")");
+    var secText=ex.sections.length>1?secNames.join(" / "):"";
+    var mainTitle=ex.sections.length===1?ex.sections[0].title:ex.sections[0].title.split("（")[0].split("(")[0];
+    html+='<div class="ex-card" onclick="openEx('+i+')">';
+    html+='<div class="ex-card-top"><span class="ex-card-id">'+ex.id+'</span><span class="ex-card-count">'+ex.total+'問</span></div>';
+    html+='<div class="ex-card-title">'+mainTitle+'</div>';
+    if(secText)html+='<div class="ex-card-sections">'+secText+'</div>';
+    html+='</div>';
+  }
+  document.getElementById("ex-list").innerHTML=html;
+}
+
+function openEx(idx){
+  selectedExIdx=idx;var ex=exData[idx];
+  if(ex.sections.length===1){
+    var items=ex.sections[0].items;
+    currentExId=ex.id;
+    startPractice(items,ex.id+" "+ex.sections[0].title,[ex.sections[0].title]);
+    return;
+  }
+  document.getElementById("section-modal-title").textContent=ex.id+" "+ex.sections[0].title.split("（")[0].split("(")[0];
+  sectionChecked={};
+  var html='<div class="section-item checked" onclick="toggleAllSections(this)"><div class="section-check">✓</div><div class="section-item-label" style="font-weight:600">すべて選択</div><div class="section-item-count">'+ex.total+'</div></div>';
+  for(var i=0;i<ex.sections.length;i++){
+    sectionChecked[i]=true;
+    html+='<div class="section-item checked" data-idx="'+i+'" onclick="toggleSection(this,'+i+')"><div class="section-check">✓</div><div class="section-item-label">'+ex.sections[i].title+'</div><div class="section-item-count">'+ex.sections[i].items.length+'</div></div>';
+  }
+  document.getElementById("section-list").innerHTML=html;
+  document.getElementById("section-overlay").classList.add("visible");
+  updateStartBtn();
+}
+function closeSections(){document.getElementById("section-overlay").classList.remove("visible")}
+function toggleSection(el,idx){
+  sectionChecked[idx]=!sectionChecked[idx];
+  el.classList.toggle("checked",sectionChecked[idx]);
+  el.querySelector(".section-check").textContent=sectionChecked[idx]?"✓":"";
+  updateAllCheckbox();updateStartBtn();
+}
+function toggleAllSections(el){
+  var items=document.querySelectorAll(".section-item[data-idx]");
+  var allChecked=true;for(var k in sectionChecked)if(!sectionChecked[k])allChecked=false;
+  var newVal=!allChecked;
+  for(var k in sectionChecked)sectionChecked[k]=newVal;
+  items.forEach(function(item){item.classList.toggle("checked",newVal);item.querySelector(".section-check").textContent=newVal?"✓":""});
+  el.classList.toggle("checked",newVal);
+  el.querySelector(".section-check").textContent=newVal?"✓":"";
+  updateStartBtn();
+}
+function updateAllCheckbox(){
+  var allChecked=true;for(var k in sectionChecked)if(!sectionChecked[k])allChecked=false;
+  var allEl=document.querySelector(".section-item:not([data-idx])");
+  if(allEl){allEl.classList.toggle("checked",allChecked);allEl.querySelector(".section-check").textContent=allChecked?"✓":""}
+}
+function updateStartBtn(){
+  var any=false;for(var k in sectionChecked)if(sectionChecked[k])any=true;
+  document.getElementById("section-start-btn").disabled=!any;
+}
+function startFromSections(){
+  var ex=exData[selectedExIdx],items=[],secTitles=[];
+  for(var i=0;i<ex.sections.length;i++){
+    if(sectionChecked[i]){for(var j=0;j<ex.sections[i].items.length;j++)items.push(ex.sections[i].items[j]);secTitles.push(ex.sections[i].title)}
+  }
+  closeSections();currentExId=ex.id;
+  var label=ex.id+(secTitles.length===ex.sections.length?"":" ("+secTitles.length+"セクション)");
+  startPractice(items,label,secTitles);
+}
+
+// === UI Controls ===
+function setMode(m){autoMode=m==='auto';document.getElementById("btn-mode-manual").classList.toggle("active",!autoMode);document.getElementById("btn-mode-auto").classList.toggle("active",autoMode);document.getElementById("auto-settings").classList.toggle("visible",autoMode)}
+function adjustTime(side,delta){if(side==='front'){autoFrontSec=Math.max(1,Math.min(15,autoFrontSec+delta));document.getElementById("auto-front-sec").textContent=autoFrontSec}else{autoBackSec=Math.max(1,Math.min(15,autoBackSec+delta));document.getElementById("auto-back-sec").textContent=autoBackSec}}
+function toggleShuffle(){doShuffle=!doShuffle;var b=document.getElementById("btn-shuffle");b.classList.toggle("active",doShuffle);b.textContent=doShuffle?"Shuffle ON":"Shuffle OFF"}
+function showScreen(id){["menu-screen","practice-screen","result-screen"].forEach(function(s){document.getElementById(s).style.display=s===id?"flex":"none"})}
+function goToMenu(){stopAuto();showScreen("menu-screen");isRetryMode=false}
+function shuffleArray(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+
+// === Jump ===
+function openJump(){
+  var g=document.getElementById("jump-grid"),html="";
+  for(var i=0;i<currentItems.length;i++){
+    var cls="jump-cell";if(i===phraseIndex)cls+=" active";else if(phraseStatus[i]==='done')cls+=" done";else if(phraseStatus[i]==='has-wrong')cls+=" has-wrong";
+    html+='<button class="'+cls+'" onclick="jumpTo('+i+')">'+(i+1)+'</button>';
+  }
+  g.innerHTML=html;document.getElementById("jump-overlay").classList.add("visible");
+}
+function closeJump(){document.getElementById("jump-overlay").classList.remove("visible")}
+function jumpTo(idx){closeJump();if(idx===phraseIndex)return;if(autoMode){stopAuto();autoPaused=false}phraseIndex=idx;flipped=false;updateUI()}
+
+// === Practice ===
+function startPractice(items,label,secTitles){
+  stopAuto();
+  var list=items.slice();
+  // Build section map
+  itemSections=[];
+  if(secTitles&&secTitles.length>1){
+    // Find which section each item belongs to
+    var ex=exData[selectedExIdx];
+    for(var i=0;i<items.length;i++){
+      for(var s=0;s<ex.sections.length;s++){
+        var found=false;
+        for(var j=0;j<ex.sections[s].items.length;j++){
+          if(ex.sections[s].items[j].ja===items[i].ja&&ex.sections[s].items[j].en===items[i].en){itemSections.push(ex.sections[s].title);found=true;break}
+        }
+        if(found)break;
+      }
+    }
+  }else if(secTitles&&secTitles.length===1){
+    for(var i=0;i<items.length;i++)itemSections.push(secTitles[0]);
+  }
+  if(doShuffle){
+    // Shuffle with paired sections
+    var paired=list.map(function(item,i){return{item:item,sec:itemSections[i]||""}});
+    shuffleArray(paired);
+    list=paired.map(function(p){return p.item});
+    itemSections=paired.map(function(p){return p.sec});
+  }
+  currentItems=list;lastItems=items;
+  phraseIndex=0;flipped=false;scoreCorrect=0;scoreWrong=0;wrongItems=[];
+  phraseStatus=[];for(var i=0;i<currentItems.length;i++)phraseStatus.push('pending');
+  isRetryMode=false;autoPaused=false;
+  showScreen("practice-screen");
+  document.getElementById("header-label").textContent=label||currentExId;
+  document.getElementById("score-bar").style.display=autoMode?"none":"flex";
+  document.getElementById("auto-bar").classList.toggle("visible",autoMode);
+  updateUI();
+  if(autoMode&&!autoPaused)startAutoStep();
+}
+
+function updateUI(){
+  var p=currentItems[phraseIndex],total=currentItems.length;
+  document.getElementById("prac-counter").textContent=(phraseIndex+1)+"/"+total;
+  document.getElementById("progress-num").textContent=(phraseIndex+1)+"/"+total;
+  document.getElementById("progress-fill").style.width=((phraseIndex+1)/total*100)+"%";
+  // Section badge
+  var badge=document.getElementById("section-badge");
+  var sec=itemSections[phraseIndex]||"";
+  if(sec){badge.style.display="block";document.getElementById("section-badge-text").textContent=sec}
+  else{badge.style.display="none"}
+  var ft=document.getElementById("front-text");ft.textContent=p.ja;ft.className="card-text ja"+(p.ja.length>25?" small":"");
+  var bt=document.getElementById("back-text");bt.textContent=p.en;bt.className="card-text en"+(p.en.length>45?" small":"");
+  document.getElementById("card-inner").classList.remove("flipped");flipped=false;
+  if(!autoMode)document.getElementById("action-row").classList.add("hidden");
+  document.getElementById("tap-hint").textContent=autoMode?(autoPaused?"\u4e00\u6642\u505c\u6b62\u4e2d":"Auto Play \u518d\u751f\u4e2d..."):"タップで答えを見る";
+  document.getElementById("score-correct").textContent=scoreCorrect;
+  document.getElementById("score-wrong").textContent=scoreWrong;
+  var cw=document.querySelector(".card-wrapper");cw.classList.remove("animate-in");void cw.offsetWidth;cw.classList.add("animate-in");
+}
+function flipCard(){
+  if(flipped)return;flipped=true;
+  document.getElementById("card-inner").classList.add("flipped");
+  if(!autoMode)document.getElementById("action-row").classList.remove("hidden");
+  document.getElementById("tap-hint").textContent=autoMode?"Auto Play \u518d\u751f\u4e2d...":"覚えた？";
+  speak(currentItems[phraseIndex].en,'en');
+}
+function answerCard(correct){
+  if(!flipped)return;
+  if(correct){scoreCorrect++;phraseStatus[phraseIndex]='done'}
+  else{scoreWrong++;wrongItems.push(currentItems[phraseIndex]);phraseStatus[phraseIndex]='has-wrong'}
+  if(phraseIndex+1>=currentItems.length)showResults();
+  else{phraseIndex++;flipped=false;updateUI()}
+}
+
+// === Results ===
+function showResults(){
+  stopAuto();
+  if(autoMode){var tc=currentItems.length;document.getElementById("result-pct").textContent="✓";document.getElementById("result-sub").textContent=tc+" cards";document.getElementById("result-correct").textContent=tc;document.getElementById("result-wrong").textContent="0";document.getElementById("retry-label").style.display="none";document.getElementById("retry-wrong-btn").style.display="none"}
+  else{var tc=scoreCorrect+scoreWrong,pct=Math.round(scoreCorrect/tc*100);document.getElementById("result-pct").textContent=pct+"%";document.getElementById("result-sub").textContent=scoreCorrect+" / "+tc+" correct";document.getElementById("result-correct").textContent=scoreCorrect;document.getElementById("result-wrong").textContent=scoreWrong;var n=wrongItems.length;document.getElementById("retry-label").style.display=n>0?"block":"none";document.getElementById("retry-wrong-btn").style.display=n>0?"block":"none";document.getElementById("retry-count").textContent=n}
+  showScreen("result-screen");
+}
+function retryWrong(){var list=wrongItems.slice();isRetryMode=true;wrongItems=[];itemSections=list.map(function(){return""});startPractice(list,"❌ 再チャレンジ",null)}
+
+// === Auto ===
+var CIRC=2*Math.PI*17;
+function updateRing(r,t){var el=document.getElementById("ring-fg"),tx=document.getElementById("timer-text");if(!el)return;el.setAttribute("stroke-dashoffset",String(CIRC*(1-r/t)));tx.textContent=Math.ceil(r)}
+function stopAuto(){clearTimeout(autoTimerId);clearInterval(autoCountdownId);autoTimerId=null;autoCountdownId=null}
+function startAutoStep(){
+  stopAuto();if(autoPaused)return;
+  speak(currentItems[phraseIndex].ja,'ja');
+  updateRing(autoFrontSec,autoFrontSec);var t0=Date.now();
+  autoCountdownId=setInterval(function(){updateRing(Math.max(0,autoFrontSec-(Date.now()-t0)/1000),autoFrontSec)},50);
+  autoTimerId=setTimeout(function(){clearInterval(autoCountdownId);flipCard();updateRing(autoBackSec,autoBackSec);var t1=Date.now();autoCountdownId=setInterval(function(){updateRing(Math.max(0,autoBackSec-(Date.now()-t1)/1000),autoBackSec)},50);autoTimerId=setTimeout(function(){clearInterval(autoCountdownId);autoAdvance()},autoBackSec*1000)},autoFrontSec*1000);
+}
+function autoAdvance(){
+  phraseStatus[phraseIndex]='done';
+  if(phraseIndex+1>=currentItems.length){stopAuto();showResults()}
+  else{phraseIndex++;flipped=false;updateUI();if(!autoPaused)startAutoStep()}
+}
+function toggleAutoPause(){
+  autoPaused=!autoPaused;
+  document.getElementById("pause-icon").style.display=autoPaused?"none":"block";
+  document.getElementById("play-icon").style.display=autoPaused?"block":"none";
+  document.getElementById("pause-label").textContent=autoPaused?"再開":"一時停止";
+  document.getElementById("tap-hint").textContent=autoPaused?"一時停止中":"Auto Play 再生中...";
+  if(autoPaused)stopAuto();else startAutoStep();
+}
+
+// === Keyboard ===
+document.addEventListener("keydown",function(e){
+  if(document.getElementById("practice-screen").style.display==="none")return;
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();flipCard()}
+  if(e.key==="ArrowRight"||e.key==="o")answerCard(true);
+  if(e.key==="ArrowLeft"||e.key==="x")answerCard(false);
+});
+
+// === Init ===
+buildMenu();
+
+</script>
+</body>
+</html>
